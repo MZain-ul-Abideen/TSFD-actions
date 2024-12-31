@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16, 18, 20]  # Define your Node.js versions here
+        node-version: [17, 18, 18.1, 18.2]  # Define your Node.js versions here
 
     steps:
       - name: Checkout code
