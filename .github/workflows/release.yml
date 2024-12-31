@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*'  # Trigger on version tags (e.g., v1.0.0)
 
 jobs:
   release:
@@ -21,15 +21,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build Project
-        run: npm run build  # Make sure this command generates the 'build' directory
-
-      - name: List Current Directory
-        run: ls -R  # Helps identify what directories/files were created
-
       - name: Run tests
         run: npm test
-        continue-on-error: false
+        continue-on-error: false  # Fail the job if tests fail
 
       - name: Generate Changelog
         id: changelog
@@ -41,9 +35,6 @@ jobs:
           cat CHANGELOG.md >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: List Build Artifacts
-        run: ls -R build/
-
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -51,11 +42,12 @@ jobs:
           name: Release ${{ github.ref }}
           body: ${{ env.changelog }}
           files: |
-            build/**/*  # Ensure this path matches where your artifacts are generated
-            reports/**/*  # Ensure this path matches where your reports are generated
+            build/**/*  # Adjust paths as necessary
+            reports/**/*  # Adjust paths as necessary
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Notify Release Creation
-        if: success()
-        run: "echo 'Release created successfully: $GITHUB_REF.'"
+        if: success()  # Only run if previous steps succeeded
+        run: |
+          echo "Release created successfully: $GITHUB_REF."
