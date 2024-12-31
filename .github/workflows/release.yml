@@ -41,13 +41,13 @@ jobs:
           tag_name: ${{ github.ref }}
           name: Release ${{ github.ref }}
           body: ${{ env.changelog }}
-          files: build/**/* reports/**/*  # Adjust these paths as necessary
+          files: |
+            build/**/*  # Adjust paths as necessary
+            reports/**/*  # Adjust paths as necessary
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Notify Release Creation
         if: success()  # Only run if previous steps succeeded
         run: |
-          # Notify about successful release creation.
-          # Using $GITHUB_REF to include the tag name in the message.
           echo "Release created successfully: $GITHUB_REF."
