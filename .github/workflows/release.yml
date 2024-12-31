@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers on version tags (e.g., v1.0.0)
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Generate Changelog
+        id: changelog
+        run: |
+          npm install -g conventional-changelog-cli
+          conventional-changelog -p angular -o CHANGELOG.md
+          echo "::set-output name=changelog::$(cat CHANGELOG.md)"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          files: 
+            - build/**/*  # Adjust this to your actual build artifacts path
+            - reports/**/*  # Adjust this to your actual reports path
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
