@@ -31,20 +31,23 @@ jobs:
           npm install -g conventional-changelog-cli
           conventional-changelog -p angular -o CHANGELOG.md || { echo "Changelog generation failed"; exit 1; }
           echo "Changelog generated successfully."
-          echo "::set-output name=changelog::$(cat CHANGELOG.md)"
+          echo "changelog<<EOF" >> $GITHUB_ENV
+          cat CHANGELOG.md >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: ${{ steps.changelog.outputs.changelog }}
-          files: 
-            - build/**/*  # Adjust these paths as necessary
-            - reports/**/*  # Adjust these paths as necessary
+          name: Release ${{ github.ref }}
+          body: ${{ env.changelog }}
+          files: build/**/* reports/**/*  # Adjust these paths as necessary
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Notify Release Creation
         if: success()  # Only run if previous steps succeeded
-        run: echo "Release created successfully: ${{ github.ref }}."
+        run: |
+          # Notify about successful release creation.
+          # Using $GITHUB_REF to include the tag name in the message.
+          echo "Release created successfully: $GITHUB_REF."
