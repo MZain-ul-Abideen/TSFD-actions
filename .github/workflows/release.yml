@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'  # Triggers on version tags (e.g., v1.0.0)
+      - 'v*'  # Trigger on version tags (e.g., v1.0.0)
 
 jobs:
   release:
@@ -23,12 +23,14 @@ jobs:
 
       - name: Run tests
         run: npm test
+        continue-on-error: false  # Fail the job if tests fail
 
       - name: Generate Changelog
         id: changelog
         run: |
           npm install -g conventional-changelog-cli
-          conventional-changelog -p angular -o CHANGELOG.md
+          conventional-changelog -p angular -o CHANGELOG.md || { echo "Changelog generation failed"; exit 1; }
+          echo "Changelog generated successfully."
           echo "::set-output name=changelog::$(cat CHANGELOG.md)"
 
       - name: Create Release
@@ -38,7 +40,11 @@ jobs:
           release_name: Release ${{ github.ref }}
           body: ${{ steps.changelog.outputs.changelog }}
           files: 
-            - build/**/*  # Adjust this to your actual build artifacts path
-            - reports/**/*  # Adjust this to your actual reports path
+            - build/**/*  # Adjust these paths as necessary
+            - reports/**/*  # Adjust these paths as necessary
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify Release Creation
+        if: success()  # Only run if previous steps succeeded
+        run: echo "Release created successfully: ${{ github.ref }}."
