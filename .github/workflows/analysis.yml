@@ -1,0 +1,48 @@
+name: Code Analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  analysis:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18]  # You can add more Node.js versions if needed
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: true  # Continue even if ESLint finds issues
+
+      - name: Run Prettier
+        run: npm run format -- --check  # Check for formatting issues
+        continue-on-error: true  # Continue even if Prettier finds issues
+
+      - name: Check for secrets
+        run: git secrets --scan
+        continue-on-error: true  # Continue even if secrets are found
+
+      - name: Run SonarQube Analysis (optional)
+        run: |
+          # Ensure you have SonarQube set up and replace the following with your actual command
+          echo "Running SonarQube analysis..."  # Placeholder for actual SonarQube command
+        continue-on-error: true  # Continue even if analysis fails
+
+      - name: Report status
+        run: echo "Code analysis completed."
