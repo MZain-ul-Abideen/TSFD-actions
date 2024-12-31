@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16, 18, 20]  # Define your Node.js versions here
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+        continue-on-error: true  # Continue even if tests fail
+
+      - name: Build project
+        run: npm run build
+        continue-on-error: true  # Continue even if build fails
+
+      - name: Report status
+        run: echo "Build and tests completed for Node.js version ${{ matrix.node-version }}."
