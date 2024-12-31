@@ -21,6 +21,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Build Project
+        run: npm run build  # Make sure this command generates the 'build' directory
+
+      - name: List Current Directory
+        run: ls -R  # Helps identify what directories/files were created
+
       - name: Run tests
         run: npm test
         continue-on-error: false
@@ -52,5 +58,4 @@ jobs:
 
       - name: Notify Release Creation
         if: success()
-        run: |
-          echo "Release created successfully: $GITHUB_REF."
+        run: "echo 'Release created successfully: $GITHUB_REF.'"
