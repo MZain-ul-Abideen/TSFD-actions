@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [17, 18, 20]  # Define your Node.js versions here
+        node-version: [17, 18, 20]
 
     steps:
       - name: Checkout code
@@ -24,15 +24,15 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps --fetch-timeout=60000
 
       - name: Run tests
         run: npm test
-        continue-on-error: true  # Continue even if tests fail
+        continue-on-error: true
 
       - name: Build project
         run: npm run build
-        continue-on-error: true  # Continue even if build fails
+        continue-on-error: true
 
       - name: Report status
         run: echo "Build and tests completed for Node.js version ${{ matrix.node-version }}."
