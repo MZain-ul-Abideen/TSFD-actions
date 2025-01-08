@@ -1,13 +1,67 @@
-name: Release
+name: CI/CD Pipeline
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'  # Trigger on version tags (e.g., v1.0.0)
+  pull_request:
 
 jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14, 16, 18]  # Matrix for multiple Node.js versions
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run unit tests
+        run: npm test
+        continue-on-error: false  # Fail the job if tests fail
+
+  code_analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: true  # Continue even if ESLint finds issues
+
+      - name: Run Prettier
+        run: npm run format -- --check  # Check for formatting issues
+        continue-on-error: true  # Continue even if Prettier finds issues
+
+      - name: Check for secrets
+        run: git secrets --scan
+        continue-on-error: true  # Continue even if secrets are found
+
   release:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout code
@@ -51,3 +105,30 @@ jobs:
         if: success()  # Only run if previous steps succeeded
         run: |
           echo "Release created successfully: $GITHUB_REF."
+
+  publish_docs:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build documentation
+        run: npm run build-docs  # Replace with your docs build command
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages  # Target branch for GitHub Pages
+          folder: docs/  # Folder with your generated docs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
