@@ -1,0 +1,20 @@
+name: Documentation
+on:
+  push:
+    branches:
+      - main  # or master, depending on your default branch name
+
+jobs:
+  deploy-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # The directory that will be published. By default, use the root directory
+          publish_dir: .
+          publish_branch: gh-pages
