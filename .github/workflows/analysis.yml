@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18]  # You can add more Node.js versions if needed
+        node-version: [18]
 
     steps:
       - name: Checkout code
@@ -24,25 +24,24 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --fetch-timeout=60000
 
       - name: Run ESLint
         run: npm run lint
-        continue-on-error: true  # Continue even if ESLint finds issues
+        continue-on-error: true
 
       - name: Run Prettier
-        run: npm run format -- --check  # Check for formatting issues
-        continue-on-error: true  # Continue even if Prettier finds issues
+        run: npm run format -- --check
+        continue-on-error: true
 
       - name: Check for secrets
         run: git secrets --scan
-        continue-on-error: true  # Continue even if secrets are found
+        continue-on-error: true
 
       - name: Run SonarQube Analysis (optional)
         run: |
-          # Ensure you have SonarQube set up and replace the following with your actual command
-          echo "Running SonarQube analysis..."  # Placeholder for actual SonarQube command
-        continue-on-error: true  # Continue even if analysis fails
+          echo "Running SonarQube analysis..."
+        continue-on-error: true
 
       - name: Report status
         run: echo "Code analysis completed."
